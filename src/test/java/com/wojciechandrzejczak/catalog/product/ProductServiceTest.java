@@ -1,6 +1,7 @@
 package com.wojciechandrzejczak.catalog.product;
 
 import com.wojciechandrzejczak.catalog.producer.Producer;
+import com.wojciechandrzejczak.catalog.producer.ProducerRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +20,8 @@ import static org.mockito.Mockito.*;
 public class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
-
+    @Mock
+    private ProducerRepository producerRepository;
     @InjectMocks
     private ProductService productService;
 
