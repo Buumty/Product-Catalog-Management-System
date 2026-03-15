@@ -22,6 +22,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.findAllProducts());
     }
 
+    @GetMapping("{producerName}")
+    public ResponseEntity<List<Product>> findProductsByProducer(@PathVariable String producerName) {
+        return ResponseEntity.ok(productService.findAllProductsByProducerName(producerName));
+    }
+
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         return new ResponseEntity<Product>(productService.createProduct(product), HttpStatus.CREATED);

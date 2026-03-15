@@ -21,6 +21,14 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    public List<Product> findAllProductsByProducerName(String producerName) {
+        if (producerName == null || producerName.isBlank()) {
+            throw new IllegalArgumentException("Producer name cannot be null or blank");
+        }
+
+        return productRepository.findByProducer_Name(producerName);
+    }
+
     public Product createProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
@@ -74,4 +82,6 @@ public class ProductService {
 
         productRepository.delete(product);
     }
+
+
 }

@@ -93,6 +93,53 @@ public class ProductServiceTest {
     }
 
     @Test
+    void givenValidProducerName_whenFindAllProductsByProducerName_thenReturnGivenProducerProducts() {
+        Product p1Test = new Product(
+                new Producer("Samsung"),
+                "SAMSUNG QE98QN990F 98",
+                "Samsung TV",
+                new BigDecimal("4999.99"),
+                new HashMap<>());
+        Product p2Test = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5",
+                "Samsung Smartphone",
+                new BigDecimal("1499.99"),
+                new HashMap<>());
+        Product p3Test = new Product(
+                new Producer("Apple"),
+                "Smartphone Iphone 13",
+                "Apple Smartphone",
+                new BigDecimal("1999.99"),
+                new HashMap<>());
+
+        List<Product> samsungProductList = new ArrayList<>();
+        samsungProductList.add(p1Test);
+        samsungProductList.add(p2Test);
+
+        when(productRepository.findByProducer_Name("Samsung")).thenReturn(samsungProductList);
+
+        List<Product> allProductsByProducerName = productService.findAllProductsByProducerName("Samsung");
+
+        assertEquals(samsungProductList.size(), allProductsByProducerName.size());
+        verify(productRepository, times(1)).findByProducer_Name("Samsung");
+    }
+
+    @Test
+    void givenBlankProducerName_whenFindAllProductsByProducerName_thenThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.findAllProductsByProducerName(""));
+    }
+
+    @Test
+    void givenNullProducerName_whenFindAllProductsByProducerName_thenThrowIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> productService.findAllProductsByProducerName(null)
+        );
+    }
+
+    @Test
     void givenValidProduct_whenCreateProduct_thenSaveAndReturnProduct() {
         Product inputProduct = new Product(
                 new Producer("Samsung"),

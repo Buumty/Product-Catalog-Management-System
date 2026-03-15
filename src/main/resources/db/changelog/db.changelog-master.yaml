@@ -78,3 +78,136 @@ databaseChangeLog:
               - column:
                   name: attribute_value
                   type: VARCHAR(255)
+  - changeSet:
+      id: 5-seed-initial-data
+      author: wojciech
+      changes:
+
+        - insert:
+            tableName: producer
+            columns:
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: name
+                  value: Samsung
+
+        - insert:
+            tableName: producer
+            columns:
+              - column:
+                  name: id
+                  value: 2
+              - column:
+                  name: name
+                  value: Apple
+
+        - insert:
+            tableName: product
+            columns:
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: name
+                  value: Samsung Galaxy S23
+              - column:
+                  name: description
+                  value: Samsung smartphone
+              - column:
+                  name: price
+                  valueNumeric: 3499.99
+              - column:
+                  name: producer_id
+                  value: 1
+
+        - insert:
+            tableName: product
+            columns:
+              - column:
+                  name: id
+                  value: 2
+              - column:
+                  name: name
+                  value: SAMSUNG QE98QN990F 98
+              - column:
+                  name: description
+                  value: Samsung TV
+              - column:
+                  name: price
+                  valueNumeric: 5000.00
+              - column:
+                  name: producer_id
+                  value: 1
+
+        - insert:
+            tableName: product
+            columns:
+              - column:
+                  name: id
+                  value: 3
+              - column:
+                  name: name
+                  value: iPhone 13
+              - column:
+                  name: description
+                  value: Apple smartphone
+              - column:
+                  name: price
+                  valueNumeric: 3999.99
+              - column:
+                  name: producer_id
+                  value: 2
+
+        - insert:
+            tableName: product_attributes
+            columns:
+              - column:
+                  name: product_id
+                  value: 1
+              - column:
+                  name: attribute_key
+                  value: RAM
+              - column:
+                  name: attribute_value
+                  value: 8GB
+
+        - insert:
+            tableName: product_attributes
+            columns:
+              - column:
+                  name: product_id
+                  value: 1
+              - column:
+                  name: attribute_key
+                  value: Storage
+              - column:
+                  name: attribute_value
+                  value: 256GB
+
+        - insert:
+            tableName: product_attributes
+            columns:
+              - column:
+                  name: product_id
+                  value: 2
+              - column:
+                  name: attribute_key
+                  value: Storage
+              - column:
+                  name: attribute_value
+                  value: 128GB
+
+        - insert:
+            tableName: product_attributes
+            columns:
+              - column:
+                  name: product_id
+                  value: 2
+              - column:
+                  name: attribute_key
+                  value: Color
+              - column:
+                  name: attribute_value
+                  value: Black
