@@ -26,7 +26,7 @@ The project is built using Spring Boot and uses Liquibase for database migration
 ### 1. Clone the repository
 
 git clone <repository-url>
-cd product-catalog
+cd Product-Catalog-Management-System
 
 ### 2. Build the project
 
