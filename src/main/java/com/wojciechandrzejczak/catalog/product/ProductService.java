@@ -1,5 +1,7 @@
 package com.wojciechandrzejczak.catalog.product;
 
+import com.wojciechandrzejczak.catalog.producer.Producer;
+import com.wojciechandrzejczak.catalog.producer.ProducerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +12,12 @@ import java.util.NoSuchElementException;
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ProducerRepository producerRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, ProducerRepository producerRepository) {
         this.productRepository = productRepository;
+        this.producerRepository = producerRepository;
     }
 
 
@@ -33,7 +37,10 @@ public class ProductService {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
-        if (product.getProducer().getName().isBlank()) {
+
+        Producer producer = product.getProducer();
+
+        if (producer == null || product.getProducer().getName().isBlank()) {
             throw new IllegalArgumentException("Producer name cannot be blank");
         }
         if (product.getName().isBlank()) {
@@ -46,6 +53,12 @@ public class ProductService {
         if (product.getPrice().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Product price cannot be lower than 0.00");
         }
+
+        Producer savedProducer = producerRepository.findByName(producer.getName())
+                .orElseGet(() -> producerRepository.save(new Producer(producer.getName())));
+
+        product.setProducer(savedProducer);
+
         return productRepository.save(product);
     }
 

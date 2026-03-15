@@ -211,3 +211,16 @@ databaseChangeLog:
               - column:
                   name: attribute_value
                   value: Black
+  - changeSet:
+      id: 6-reset-product-identity
+      author: wojciech
+      changes:
+        - sql:
+            sql: ALTER TABLE product ALTER COLUMN id RESTART WITH 100;
+
+  - changeSet:
+      id: 7-reset-producer-identity
+      author: wojciech
+      changes:
+        - sql:
+            sql: ALTER TABLE producer ALTER COLUMN id RESTART WITH 100;
