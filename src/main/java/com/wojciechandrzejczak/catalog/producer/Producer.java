@@ -1,9 +1,16 @@
 package com.wojciechandrzejczak.catalog.producer;
 
-import com.wojciechandrzejczak.catalog.product.Product;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 
+@Entity
 public class Producer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String name;
 
     public Producer(String name) {

@@ -8,16 +8,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
@@ -58,7 +54,7 @@ public class ProductServiceTest {
         List<Product> allProducts = productService.findAllProducts();
 
         assertEquals(productList.size(), allProducts.size());
-        verify(productRepository).findAll();
+        verify(productRepository, times(1)).findAll();
     }
 
     @Test
@@ -68,7 +64,7 @@ public class ProductServiceTest {
         List<Product> allProducts = productService.findAllProducts();
 
         assertEquals(0, allProducts.size());
-        verify(productRepository).findAll();
+        verify(productRepository,times(1)).findAll();
     }
 
     @Test
@@ -93,7 +89,7 @@ public class ProductServiceTest {
         assertEquals(p1Test.getDescription(), productFromDb.getDescription());
         assertEquals(p1Test.getPrice(), productFromDb.getPrice());
         assertEquals(p1Test.getOtherAttributesMap().size(), productFromDb.getOtherAttributesMap().size());
-        verify(productRepository).findAll();
+        verify(productRepository, times(1)).findAll();
     }
 
     @Test
@@ -105,7 +101,7 @@ public class ProductServiceTest {
                 new BigDecimal("4999.99"),
                 new HashMap<>());
 
-        when(productRepository.save(any())).thenReturn(inputProduct);
+        when(productRepository.save(any(Product.class))).thenReturn(inputProduct);
 
         Product savedProduct = productService.createProduct(new Product(
                 new Producer("Samsung"),
@@ -120,7 +116,7 @@ public class ProductServiceTest {
         assertEquals(inputProduct.getDescription(), savedProduct.getDescription());
         assertEquals(inputProduct.getPrice(), savedProduct.getPrice());
         assertEquals(inputProduct.getOtherAttributesMap().size(), savedProduct.getOtherAttributesMap().size());
-        verify(productRepository).save(any());
+        verify(productRepository, times(1)).save(any(Product.class));
     }
 
     @Test
@@ -133,10 +129,231 @@ public class ProductServiceTest {
         );
     }
     @Test
-    void givenProductWithBlankAttribute_whenCreateProduct_thenThrow() {
-        Product inputProduct = new Product(new Producer(""),"", "",  new BigDecimal(""), new HashMap<>());
+    void givenProductWithBlankName_whenCreateProduct_thenThrowIllegalArgumentException() {
+        Product inputProduct = new Product(new Producer("Samsung"),"", "description",  new BigDecimal("10.00"), new HashMap<>());
 
         assertThrows(IllegalArgumentException.class,
                 () -> productService.createProduct(inputProduct));
+    }
+
+    @Test
+    void givenProductWithBlankProducerName_whenCreateProduct_thenThrowIllegalArgumentException() {
+        Product inputProduct = new Product(new Producer(""),"Smartphone Samsung Galaxy A5", "description",  new BigDecimal("10.00"), new HashMap<>());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(inputProduct));
+    }
+    @Test
+    void givenProductWithBlankDescription_whenCreateProduct_thenThrowIllegalArgumentException() {
+        Product inputProduct = new Product(new Producer("Samsung"),"Smartphone Samsung Galaxy A5", "",  new BigDecimal("10.00"), new HashMap<>());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(inputProduct));
+    }
+
+    @Test
+    void givenProductWithPriceBelowZero_whenCreateProduct_thenThrowIllegalArgumentException() {
+        Product inputProduct = new Product(new Producer("Samsung"),"Smartphone Samsung Galaxy A5", "description",  new BigDecimal("-10.00"), new HashMap<>());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.createProduct(inputProduct));
+    }
+
+    @Test
+    void givenValidNewProduct_whenUpdateProduct_thenReturnUpdatedProduct() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        Product newProduct = new Product(
+                new Producer("Apple"),
+                "Smartphone Apple Iphone 13",
+                "Apple Phone", new BigDecimal("1999.99"),
+                new HashMap<>());
+
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+        when(productRepository.save(any(Product.class))).thenReturn(newProduct);
+
+        Product updatedProduct = productService.updateProduct(1L, newProduct);
+
+
+        assertEquals(newProduct.getProducer().getName(), updatedProduct.getProducer().getName());
+        assertEquals(newProduct.getName(), updatedProduct.getName());
+        assertEquals(newProduct.getDescription(), updatedProduct.getDescription());
+        assertEquals(newProduct.getPrice(), updatedProduct.getPrice());
+        assertEquals(newProduct.getOtherAttributesMap(), updatedProduct.getOtherAttributesMap());
+        verify(productRepository, times(1)).save(any(Product.class));
+        verify(productRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void givenNonExistingId_whenUpdateProduct_thenThrowNoSuchElementException() {
+        Long nonExistingId = 1000L;
+
+        Product newProduct = new Product(
+                new Producer("Apple"),
+                "Smartphone Apple Iphone 13",
+                "Apple Phone", new BigDecimal("1999.99"),
+                new HashMap<>());
+
+        when(productRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class,
+                () -> productService.updateProduct(nonExistingId, newProduct));
+
+        verify(productRepository, times(1)).findById(nonExistingId);
+    }
+
+    @Test
+    void givenProductWithBlankProducerName_whenUpdateProduct_thenThrowIllegalArgumentException() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        Product newProduct = new Product(
+                new Producer(""),
+                "Smartphone Apple Iphone 13",
+                "Apple Phone", new BigDecimal("1999.99"),
+                new HashMap<>());
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(1L, newProduct));
+
+        verify(productRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void givenProductWithBlankName_whenUpdateProduct_thenThrowIllegalArgumentException() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        Product newProduct = new Product(
+                new Producer("Apple"),
+                "",
+                "Apple Phone", new BigDecimal("1999.99"),
+                new HashMap<>());
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(1L, newProduct));
+
+        verify(productRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void givenProductWithBlankDescription_whenUpdateProduct_thenThrowIllegalArgumentException() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        Product newProduct = new Product(
+                new Producer("Apple"),
+                "Smartphone Apple Iphone 13",
+                "", new BigDecimal("1999.99"),
+                new HashMap<>());
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(1L, newProduct));
+
+        verify(productRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void givenProductWithNullPrice_whenUpdateProduct_thenThrowIllegalArgumentException() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        Product newProduct = new Product(
+                new Producer("Apple"),
+                "Smartphone Apple Iphone 13",
+                "Apple Phone", null,
+                new HashMap<>());
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(1L, newProduct));
+
+        verify(productRepository, times(1)).findById(1L);
+    }
+    @Test
+    void givenProductWithPriceBelowZero_whenUpdateProduct_thenThrowIllegalArgumentException() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        Product newProduct = new Product(
+                new Producer("Apple"),
+                "Smartphone Apple Iphone 13",
+                "Apple Phone", new BigDecimal("-1000.00"),
+                new HashMap<>());
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> productService.updateProduct(1L, newProduct));
+
+        verify(productRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void givenValidId_whenDeleteProductById_thenDeleteProduct() {
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+        productService.deleteProduct(1L);
+
+        verify(productRepository, times(1)).findById(1L);
+        verify(productRepository, times(1)).delete(existingProduct);
+    }
+
+    @Test
+    void givenNonExistingId_whenDeleteProductById_thenThrowNoSuchElementException() {
+        Long nonExistingId = 1000L;
+
+        Product existingProduct = new Product(
+                new Producer("Samsung"),
+                "Smartphone Samsung Galaxy A5", "Samsung Phone",
+                new BigDecimal("999.99"),
+                new HashMap<>());
+        existingProduct.setId(1L);
+
+        assertThrows(NoSuchElementException.class,
+                () -> productService.deleteProduct(nonExistingId));
+
+        verify(productRepository, times(1)).findById(1000L);
+        verify(productRepository, times(0)).delete(existingProduct);
     }
 }
